@@ -33,6 +33,7 @@ AVPictureInPictureController *_pipController;
         _player.automaticallyWaitsToMinimizeStalling = false;
     }
     self._observersAdded = false;
+    _doverunnerSdk = [[DOVERUNNERFairPlay alloc] init];
     return self;
 }
 
@@ -217,10 +218,22 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
         if (certificateUrl && certificateUrl != [NSNull null] && [certificateUrl length] > 0) {
             NSURL * certificateNSURL = [[NSURL alloc] initWithString: certificateUrl];
             NSURL * licenseNSURL = [[NSURL alloc] initWithString: licenseUrl];
-            _loaderDelegate = [[BetterPlayerEzDrmAssetsLoaderDelegate alloc] init:certificateNSURL withLicenseURL:licenseNSURL];
-            dispatch_queue_attr_t qos = dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_SERIAL, QOS_CLASS_DEFAULT, -1);
-            dispatch_queue_t streamQueue = dispatch_queue_create("streamQueue", qos);
-            [asset.resourceLoader setDelegate:_loaderDelegate queue:streamQueue];
+            // _loaderDelegate = [[BetterPlayerEzDrmAssetsLoaderDelegate alloc] init:certificateNSURL withLicenseURL:licenseNSURL];
+            // dispatch_queue_attr_t qos = dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_SERIAL, QOS_CLASS_DEFAULT, -1);
+            // dispatch_queue_t streamQueue = dispatch_queue_create("streamQueue", qos);
+            // [asset.resourceLoader setDelegate:_loaderDelegate queue:streamQueue];
+
+            // doverunner sdk 
+            FairPlayConfiguration* config = [[FairPlayConfiguration alloc] initWithAvURLAsset:asset 
+                                                                                    contentId:content_id 
+                                                                               certificateUrl:certificateUrl 
+                                                                                     authData:auth_data 
+                                                                                     delegate:self 
+                                                                                   licenseUrl:nil 
+                                                                            licenseHttpHeader:nil 
+                                                                               licenseCookies:nil 
+                                                                              renewalInterval:RenewalIntervalZero];
+            [_doverunnerSdk prepareWithDrm:config];
         }
         item = [AVPlayerItem playerItemWithAsset:asset];
     }
