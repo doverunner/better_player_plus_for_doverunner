@@ -218,22 +218,10 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
         if (certificateUrl && certificateUrl != [NSNull null] && [certificateUrl length] > 0) {
             NSURL * certificateNSURL = [[NSURL alloc] initWithString: certificateUrl];
             NSURL * licenseNSURL = [[NSURL alloc] initWithString: licenseUrl];
-            // _loaderDelegate = [[BetterPlayerEzDrmAssetsLoaderDelegate alloc] init:certificateNSURL withLicenseURL:licenseNSURL];
-            // dispatch_queue_attr_t qos = dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_SERIAL, QOS_CLASS_DEFAULT, -1);
-            // dispatch_queue_t streamQueue = dispatch_queue_create("streamQueue", qos);
-            // [asset.resourceLoader setDelegate:_loaderDelegate queue:streamQueue];
-
-            // doverunner sdk 
-            FairPlayConfiguration* config = [[FairPlayConfiguration alloc] initWithAvURLAsset:asset 
-                                                                                    contentId:content_id 
-                                                                               certificateUrl:certificateUrl 
-                                                                                     authData:auth_data 
-                                                                                     delegate:self 
-                                                                                   licenseUrl:nil 
-                                                                            licenseHttpHeader:nil 
-                                                                               licenseCookies:nil 
-                                                                              renewalInterval:RenewalIntervalZero];
-            [_doverunnerSdk prepareWithDrm:config];
+            _loaderDelegate = [[BetterPlayerEzDrmAssetsLoaderDelegate alloc] init:certificateNSURL withLicenseURL:licenseNSURL];
+            dispatch_queue_attr_t qos = dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_SERIAL, QOS_CLASS_DEFAULT, -1);
+            dispatch_queue_t streamQueue = dispatch_queue_create("streamQueue", qos);
+            [asset.resourceLoader setDelegate:_loaderDelegate queue:streamQueue];
         }
         item = [AVPlayerItem playerItemWithAsset:asset];
     }
@@ -242,6 +230,77 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
         _overriddenDuration = overriddenDuration;
     }
     return [self setDataSourcePlayerItem:item withKey:key];
+}
+
+
+// Add for Doverunner FairPlay SDK
+- (void)setDataSourceURL:(NSURL*)url withKey:(NSString*)key withCertificateUrl:(NSString*)certificateUrl withLicenseUrl:(NSString*)licenseUrl withHeaders:(NSDictionary*)headers withDrmHeaders:(NSDictionary*)drmHeaders withCache:(BOOL)useCache cacheKey:(NSString*)cacheKey cacheManager:(CacheManager*)cacheManager overriddenDuration:(int) overriddenDuration videoExtension: (NSString*) videoExtension
+{
+    _overriddenDuration = 0;
+        if (headers == [NSNull null] || headers == NULL){
+            NSLog(@"header is null");
+            headers = @{};
+        }
+
+        if (drmHeaders == [NSNull null] || drmHeaders == NULL){
+            NSLog(@"drmHeader is null");
+            drmHeaders = @{};
+        }
+
+        NSString* content_id = @"";
+        NSString* auth_data = @"";
+        for (id key in drmHeaders) {
+            NSLog(@"key: %@, value: %@ \n", key, [drmHeaders objectForKey:key]);
+            if ([key isEqualToString:@"pallycon-customdata-v2"]) {
+                auth_data = [NSString stringWithString:drmHeaders[key]];
+
+                NSData *decodedData = [[NSData alloc] initWithBase64EncodedString:auth_data options:0];
+                NSError *error = nil;
+                NSDictionary *jsonDict = [NSJSONSerialization JSONObjectWithData:decodedData options:0 error:&error];
+                if (!error) {
+                    content_id = jsonDict[@"cid"]; // JSON에서 cid 값을 content_id에 할당
+                } else {
+                    NSLog(@"JSON Parsing Error: %@", error.localizedDescription);
+                }
+            }
+        }
+
+        AVPlayerItem* item;
+        if (useCache){
+            if (cacheKey == [NSNull null]){
+                cacheKey = nil;
+            }
+            if (videoExtension == [NSNull null]){
+                videoExtension = nil;
+            }
+
+            item = [cacheManager getCachingPlayerItemForNormalPlayback:url cacheKey:cacheKey videoExtension: videoExtension headers:headers];
+        } else {
+            AVURLAsset* asset = [AVURLAsset URLAssetWithURL:url
+                                                    options:@{@"AVURLAssetHTTPHeaderFieldsKey" : headers}];
+
+            if (certificateUrl && certificateUrl != [NSNull null] && [certificateUrl length] > 0) {
+                NSURL * certificateNSURL = [[NSURL alloc] initWithString: certificateUrl];
+                NSURL * licenseNSURL = [[NSURL alloc] initWithString: licenseUrl];
+                FairPlayConfiguration* config = [[FairPlayConfiguration alloc] initWithAvURLAsset:asset 
+                                                                                        contentId:content_id 
+                                                                                   certificateUrl:certificateUrl 
+                                                                                         authData:auth_data 
+                                                                                         delegate:self 
+                                                                                       licenseUrl:licenseUrl 
+                                                                                licenseHttpHeader:nil 
+                                                                                   licenseCookies:nil 
+                                                                                  renewalInterval:RenewalIntervalZero];
+                
+                [_doverunnerSdk prepareWithDrm:config];
+            }
+            item = [AVPlayerItem playerItemWithAsset:asset];
+        }
+
+        if (@available(iOS 10.0, *) && overriddenDuration > 0) {
+            _overriddenDuration = overriddenDuration;
+        }
+        return [self setDataSourcePlayerItem:item withKey:key];
 }
 
 - (void)setDataSourcePlayerItem:(AVPlayerItem*)item withKey:(NSString*)key{
