@@ -33,7 +33,7 @@ AVPictureInPictureController *_pipController;
         _player.automaticallyWaitsToMinimizeStalling = false;
     }
     self._observersAdded = false;
-    _doverunnerSdk = [[DOVERUNNERFairPlay alloc] init];
+    _doverunnerSdk = [[DoveRunnerFairPlay alloc] init];
     return self;
 }
 
