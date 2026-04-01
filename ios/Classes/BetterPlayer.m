@@ -290,8 +290,7 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
                                                                                        licenseUrl:licenseUrl 
                                                                                 licenseHttpHeader:nil 
                                                                                    licenseCookies:nil 
-                                                                                  renewalInterval:RenewalIntervalZero
-                                                                                         sendCmcd:NO];
+                                                                                  renewalInterval:RenewalIntervalZero];
                 
                 [_doverunnerSdk prepareWithDrm:config];
             }
