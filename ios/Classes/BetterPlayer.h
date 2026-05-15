@@ -7,7 +7,7 @@
 #import <AVKit/AVKit.h>
 #import <AVFoundation/AVFoundation.h>
 #import <GLKit/GLKit.h>
-#import <DOVERUNNERFairPlay/DOVERUNNERFairPlay-ObjC.h>
+#import <DoveRunnerFairPlay/DoveRunnerFairPlay-ObjC.h>
 #import "BetterPlayerTimeUtils.h"
 #import "BetterPlayerView.h"
 #import "BetterPlayerEzDrmAssetsLoaderDelegate.h"
@@ -19,7 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface BetterPlayer : NSObject <FlutterPlatformView, FlutterStreamHandler, AVPictureInPictureControllerDelegate>
 @property(readonly, nonatomic) AVPlayer* player;
 @property(readonly, nonatomic) BetterPlayerEzDrmAssetsLoaderDelegate* loaderDelegate;
-@property(readonly, nonatomic) DOVERUNNERFairPlay* doverunnerSdk;
+@property(readonly, nonatomic) DoveRunnerFairPlay* doverunnerSdk;
 @property(nonatomic) FlutterEventChannel* eventChannel;
 @property(nonatomic) FlutterEventSink eventSink;
 @property(nonatomic) CGAffineTransform preferredTransform;
