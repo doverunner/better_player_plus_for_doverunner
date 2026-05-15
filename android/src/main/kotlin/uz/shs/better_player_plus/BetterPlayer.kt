@@ -68,6 +68,7 @@ import androidx.media3.exoplayer.source.ClippingMediaSource
 import androidx.media3.exoplayer.source.MediaSource
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
+import com.doverunner.widevine.sdk.DrWvSDK
 import java.io.File
 import java.lang.Exception
 import java.lang.IllegalStateException
@@ -83,6 +84,7 @@ internal class BetterPlayer(
     result: MethodChannel.Result
 ) {
     private val exoPlayer: ExoPlayer?
+    private val wvSDK: DrWvSDK? = null
     private val eventSink = QueuingEventSink()
     private val trackSelector: DefaultTrackSelector = DefaultTrackSelector(context)
     private val loadControl: LoadControl
@@ -328,7 +330,7 @@ internal class BetterPlayer(
             }
 
             setupMediaSession(context)?.let {
-                setMediaSessionToken(it.sessionToken)
+                setMediaSessionToken(it.sessionToken.token as android.media.session.MediaSession.Token)
             }
         }
 
@@ -534,14 +536,11 @@ internal class BetterPlayer(
         }
     }
 
-    @Suppress("DEPRECATION")
     private fun setAudioAttributes(exoPlayer: ExoPlayer?, mixWithOthers: Boolean) {
-        val audioComponent = exoPlayer?.audioComponent ?: return
-        audioComponent.setAudioAttributes(
+        exoPlayer?.setAudioAttributes(
             AudioAttributes.Builder().setContentType(C.AUDIO_CONTENT_TYPE_MOVIE).build(),
             !mixWithOthers
         )
-
     }
 
     fun play() {

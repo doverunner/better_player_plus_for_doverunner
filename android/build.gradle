@@ -2,35 +2,36 @@ group 'uz.shs.better_player_plus'
 version '1.0-SNAPSHOT'
 
 buildscript {
-    ext.lifecycleVersion = "2.7.0"
+    ext.widevine = "4.5.2"
+    ext.lifecycleVersion = "2.9.3"
     ext.annotationVersion = "1.7.0"
-    ext.media3_version = "1.5.1"
+    ext.media3_version = "1.8.0"
     ext.workVersion = "2.9.0"
-    ext.kotlinVersion = "1.9.22"
+    ext.kotlinVersion = "2.1.0"
 
     repositories {
+        mavenLocal()
         google()
         mavenCentral()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.9.0'
+        classpath 'com.android.tools.build:gradle:8.9.1'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
     }
 }
 
-rootProject.allprojects {
-    repositories {
-        google()
-        mavenCentral()
-    }
+repositories {
+    mavenLocal()
+    google()
+    mavenCentral()
 }
 
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 android {
-    compileSdk 35
+    compileSdk 36
     namespace "uz.shs.better_player_plus"
 
     compileOptions {
@@ -47,10 +48,12 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion 21
+        minSdkVersion 23
     }
 
     dependencies {
+        implementation "com.doverunner:widevine:$widevine"
+
         implementation "androidx.media:media:1.7.0"
         implementation "androidx.media3:media3-ui:$media3_version"
         implementation "androidx.media3:media3-session:$media3_version"
